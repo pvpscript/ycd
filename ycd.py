@@ -105,7 +105,13 @@ class YoutubeChannelDownloader:
         #self._not_found = []
 
     def download_videos(self):
-        pass
+        ydl_opts = {
+            'format': '22/best',
+            'outtmpl': os.path.join(self._local_vids_path, '%(title)s-%(id)s.%(ext)s'),
+        }
+
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download(self._info_handler.fetch_videos_data())
 
     def _match_file_times(self, original_path, symlink_path):
         stat = os.stat(original_path)
@@ -165,6 +171,7 @@ if __name__ == '__main__':
     print(json.dumps(not_found, indent=4))
     print("\n--------------------------------------------------------------------------------\n")
 
+    downloader.download_videos()
 
 # fetch_playlists_info ##-> filter out playlists that doesn't belong to the channel's owner
 # fetch_channel_info
