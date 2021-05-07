@@ -80,7 +80,7 @@ class InformationHandler:
 
                         print(f'{src_rel_dst} -> {dst}')
                     except KeyError:
-                        print(f'Video not found for key {pl_entry["id"]}', file=sys.stderr)
+                        print(f'Video not found locally for key {pl_entry["id"]}', file=sys.stderr)
                         self._not_found.append({ pl_entry['id']: vid_title })
                     except FileExistsError:
                         pass
@@ -117,6 +117,15 @@ class YoutubeChannelDownloader:
         stat = os.stat(original_path)
         os.utime(symlink_path, times=(stat.st_atime, stat.st_mtime), follow_symlinks=False)
 
+    def organize_local_playlists(self):
+        videos = self._info_handler.fetch_playlists_data()
+        for path, symlinks in videos.items():
+            os.makedirs(path, exist_ok=True)
+            for s in symlinks:
+                os.symlink(s.rel_src, s.dst)
+                self._match_file_times(s.abs_src, s.dst)
+
+                print(f'{s.rel_src} -> {s.dst}')
 #    def organize_local_playlists(self):
 #        videos = self._get_local_videos()
 #
@@ -172,6 +181,7 @@ if __name__ == '__main__':
     print("\n--------------------------------------------------------------------------------\n")
 
     downloader.download_videos()
+    downloader.organize_local_playlists()
 
 # fetch_playlists_info ##-> filter out playlists that doesn't belong to the channel's owner
 # fetch_channel_info
